@@ -1,7 +1,7 @@
 import { NavLink, Route, Routes, Link } from "react-router-dom";
-
 import HomePage from "./pages/index.jsx";
 import AboutPage from "./pages/about.jsx";
+// import logo from "../public/logo.png";
 
 function App() {
   const navLinkClass = ({ isActive }) =>
@@ -11,8 +11,8 @@ function App() {
     <div className="min-h-screen bg-base-200 text-base-content">
       <header className="navbar bg-base-100 shadow">
         <div className="container mx-auto flex items-center justify-between">
-          <Link to="/" className="btn btn-ghost normal-case text-xl font-semibold">
-            forkify
+          <Link to="/" className="btn btn-ghost normal-case   font-semibold">
+            <img src="/public/favicon.png" className=" w-full h-10 " alt="" />
           </Link>
           <nav className="flex gap-2">
             <NavLink to="/" className={navLinkClass} end>
