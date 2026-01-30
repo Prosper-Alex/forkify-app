@@ -11,8 +11,8 @@ function App() {
     <div className="min-h-screen bg-base-200 text-base-content">
       <header className="navbar bg-base-100 shadow">
         <div className="container mx-auto flex items-center justify-between">
-          <Link to="/" className="btn btn-ghost normal-case   font-semibold">
-            <img src="/public/favicon.png" className=" w-full h-10 " alt="" />
+          <Link to="/" className="btn btn-ghost normal-case font-semibold">
+            <img src="/favicon.ico" className="h-10 w-10" alt="Forkify logo" />
           </Link>
           <nav className="flex gap-2">
             <NavLink to="/" className={navLinkClass} end>
@@ -25,7 +25,7 @@ function App() {
         </div>
       </header>
 
-      <main className="container mx-auto flex flex-1 items-center justify-center px-6 py-12">
+      <main className="container mx-auto flex flex-1 px-6 py-12">
         <Routes>
           <Route element={<HomePage />} path="/" />
           <Route element={<AboutPage />} path="/about" />

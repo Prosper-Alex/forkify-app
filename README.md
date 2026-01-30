@@ -1,50 +1,35 @@
-# Vite & HeroUI Template
+# Forkify React (Vite + Tailwind + TanStack Query)
 
-This is a template for creating applications using Vite and HeroUI (v2).
+A focused recipe browser that pulls live data from TheMealDB. Search, filter by category, and open a complete recipe with ingredients and steps in one view.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/vite-template)
+## Stack
+- Vite (React 18)
+- Tailwind CSS + DaisyUI
+- TanStack Query for data fetching/caching
+- React Router
 
-## Technologies Used
-
-- [Vite](https://vitejs.dev/guide/)
-- [HeroUI](https://heroui.com)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org)
-- [Framer Motion](https://www.framer.com/motion)
-
-## How to Use
-
-To clone the project, run the following command:
-
-```bash
-git clone https://github.com/heroui-inc/vite-template.git
-```
-
-### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
-
+## Getting started
 ```bash
 npm install
-```
-
-### Run the development server
-
-```bash
 npm run dev
 ```
+App boots at the URL printed by Vite (default: http://localhost:5173).
 
-### Setup pnpm (optional)
+## Features
+- Live search against TheMealDB (`/search.php?s=`) with graceful fallback.
+- Category pills sourced from TheMealDB (`/list.php?c=list`) and client-side filter.
+- Card grid + detail pane: select a card to fetch full recipe (`/lookup.php?i=`) and see ingredients/steps without page changes.
+- Loading/empty states baked in; safe defaults when API returns null.
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
+## Configuration notes
+- No API key needed for development (public key `1` used by default via TheMealDB base URL in `src/pages/index.jsx`).
+- To change the default search seed, update `FALLBACK_QUERY` in `src/pages/index.jsx`.
 
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
+## Scripts
+- `npm run dev` — start Vite dev server
+- `npm run build` — production build
+- `npm run preview` — preview production build
+- `npm run lint` — eslint with auto-fix
 
 ## License
-
-Licensed under the [MIT license](https://github.com/heroui-inc/vite-template/blob/main/LICENSE).
+MIT (see LICENSE)
