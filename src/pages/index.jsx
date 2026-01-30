@@ -164,7 +164,10 @@ export default function IndexPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-sm">
+      <div
+        id="recipes"
+        className="scroll-mt-28 flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-sm"
+      >
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-3 rounded-xl bg-base-200 px-4 py-2 focus-within:ring-2 focus-within:ring-amber-400">
             <svg
