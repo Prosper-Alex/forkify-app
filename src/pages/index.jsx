@@ -1,10 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import SearchBar from "../components/search-history/SearchBar.jsx";
-import RecentChips from "../components/search-history/RecentChips.jsx";
-import MealCard from "../components/recipes/MealCard.jsx";
+import HeroSection from "../components/home/HeroSection.jsx";
+import FeaturedMealsSection from "../components/home/FeaturedMealsSection.jsx";
+import CategoriesSection from "../components/home/CategoriesSection.jsx";
+import ChipsRow from "../components/home/ChipsRow.jsx";
+import FavoritesPreview from "../components/home/FavoritesPreview.jsx";
+import CtaStrip from "../components/home/CtaStrip.jsx";
 import MealDetailPanel from "../components/recipes/MealDetailPanel.jsx";
+import SectionHeader from "../components/layout/SectionHeader.jsx";
 import { fetchCategories, fetchMealById, fetchMeals } from "../utils/mealdb.js";
+
+const areasSample = ["Italian", "Mexican", "Japanese", "Indian", "French", "Greek"];
+const ingredientsSample = [
+  "Chicken",
+  "Beef",
+  "Tomato",
+  "Onion",
+  "Garlic",
+  "Basil",
+  "Rice",
+  "Pasta",
+];
 
 export default function IndexPage() {
   const [query, setQuery] = useState("");
@@ -23,9 +39,9 @@ export default function IndexPage() {
   }, [mealsQuery.data, activeTag]);
 
   useEffect(() => {
-    if (filteredMeals.length === 0) return;
-    if (!selectedId || !filteredMeals.some((meal) => meal.id === selectedId)) {
-      setSelectedId(filteredMeals[0].id);
+    if (!selectedId) return;
+    if (!filteredMeals.some((meal) => meal.id === selectedId)) {
+      setSelectedId("");
     }
   }, [filteredMeals, selectedId]);
 
@@ -35,8 +51,7 @@ export default function IndexPage() {
     enabled: Boolean(selectedId),
   });
 
-  const selectedRecipe =
-    detailQuery.data || filteredMeals.find((m) => m.id === selectedId) || filteredMeals[0];
+  const selectedRecipe = detailQuery.data || filteredMeals.find((m) => m.id === selectedId);
   const tags = categoriesQuery.data ?? [{ id: "all", label: "All" }];
 
   const addHistory = (term) => {
@@ -48,135 +63,89 @@ export default function IndexPage() {
   };
 
   return (
-    <section className="flex flex-col gap-8 pb-16">
-      <Hero history={history} onSelectChip={(term) => setQuery(term)} />
+    <section className="flex flex-col gap-10 pb-16">
+      <HeroSection
+        query={query}
+        setQuery={setQuery}
+        addHistory={addHistory}
+        history={history}
+        onClearHistory={() => setHistory([])}
+        onRemoveHistory={(term) => setHistory((prev) => prev.filter((t) => t !== term))}
+      />
 
-      <div
-        id="recipes"
-        className="scroll-mt-28 flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-sm"
-      >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <SearchBar
-            value={query}
-            onChange={setQuery}
-            onSubmit={addHistory}
-            history={history}
-            onSelectHistory={(term) => setQuery(term)}
-            onRemoveHistory={(term) => setHistory((prev) => prev.filter((t) => t !== term))}
-            onClearHistory={() => setHistory([])}
-          />
-          <div className="flex items-center gap-2 text-sm text-base-content/70">
-            <span className="badge badge-sm bg-amber-100 text-amber-700">
-              {mealsQuery.isLoading ? "…" : filteredMeals.length} matches
-            </span>
-            <span className="hidden md:inline text-xs">•</span>
-            <span className="hidden md:inline">Tap a card to open full recipe →</span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => {
-            const isActive = activeTag === tag.id;
-            return (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => setActiveTag(tag.id)}
-                className={`btn btn-sm rounded-full ${
-                  isActive
-                    ? "btn-primary border-0 bg-amber-500 text-white"
-                    : "btn-ghost border border-base-300 bg-white text-base-content"
-                }`}
-              >
-                {tag.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex flex-wrap gap-2" id="recipes">
+        {tags.map((tag) => {
+          const isActive = activeTag === tag.id;
+          return (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => setActiveTag(tag.id)}
+              className={`btn btn-sm rounded-full ${
+                isActive
+                  ? "btn-primary border-0 bg-amber-500 text-white"
+                  : "btn-ghost border border-base-300 bg-white text-base-content"
+              }`}
+            >
+              {tag.label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {mealsQuery.isLoading && (
-            <div className="col-span-2 flex items-center justify-center rounded-2xl border border-base-200 bg-base-100 p-10">
-              <span className="loading loading-dots loading-lg text-amber-500" />
-            </div>
-          )}
-
-          {!mealsQuery.isLoading &&
-            filteredMeals.map((recipe) => (
-              <MealCard
-                key={recipe.id}
-                recipe={recipe}
-                active={selectedRecipe && recipe.id === selectedRecipe.id}
-                onSelect={() => setSelectedId(recipe.id)}
-              />
-            ))}
-
-          {!mealsQuery.isLoading && filteredMeals.length === 0 && (
-            <div className="col-span-2 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-base-content/70">
-              <p className="text-lg font-semibold text-base-content">No recipes found</p>
-              <p>Try a different ingredient or clear your filters.</p>
-            </div>
-          )}
+      <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+        <div className="space-y-8">
+          <FeaturedMealsSection
+            meals={filteredMeals}
+            loading={mealsQuery.isLoading}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+          <CategoriesSection categories={tags.filter((t) => t.id !== "all")} />
+          <section className="space-y-3" id="areas">
+            <SectionHeader
+              title="Cuisines"
+              subtitle="Explore by area"
+              action={
+                <a className="btn btn-xs btn-ghost hover:text-amber-600" href="/cuisines">
+                  Explore cuisines
+                </a>
+              }
+            />
+            <ChipsRow items={areasSample} label="cuisines" />
+          </section>
+          <section className="space-y-3" id="ingredients">
+            <SectionHeader
+              title="Ingredients"
+              subtitle="Pantry picks"
+              action={
+                <a className="btn btn-xs btn-ghost hover:text-amber-600" href="/ingredients">
+                  See all ingredients
+                </a>
+              }
+            />
+            <ChipsRow items={ingredientsSample} label="ingredients" />
+          </section>
+          <FavoritesPreview meals={[]} />
+          <CtaStrip />
         </div>
 
         <aside className="flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg">
-          <MealDetailPanel recipe={selectedRecipe} />
+          {selectedRecipe ? (
+            <MealDetailPanel recipe={selectedRecipe} />
+          ) : (
+            <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-base-300 bg-base-50 p-4">
+              <p className="text-sm font-semibold text-base-content">Recipe details</p>
+              <p className="text-sm text-base-content/70">
+                Select a meal card to open the full details. This panel stays collapsed until you pick one.
+              </p>
+              <div className="rounded-lg bg-base-200 px-3 py-2 text-xs text-base-content/60">
+                Tip: use filters or search, then tap a card.
+              </div>
+            </div>
+          )}
         </aside>
       </div>
     </section>
-  );
-}
-
-function Hero({ history, onSelectChip }) {
-  return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-100 via-orange-50 to-rose-100 px-8 py-10 shadow-lg ring-1 ring-orange-200/60">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.9),transparent_45%)]" />
-      <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div className="max-w-2xl space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-600">
-            Forkify Kitchen
-          </p>
-          <h1 className="text-4xl font-bold text-slate-900 md:text-5xl">
-            Find a recipe, cook it fully, and enjoy the win.
-          </h1>
-          <p className="text-base text-slate-700 md:text-lg">
-            Search across chef-tested dishes, skim the cards, then open a complete recipe with timing,
-            servings, ingredients, steps, and nutrition at a glance.
-          </p>
-          <div className="flex flex-wrap gap-3 text-sm text-slate-700">
-            <span className="badge badge-outline border-amber-300 bg-white text-amber-700">
-              No scrolling safari — full details on the right
-            </span>
-            <span className="badge badge-outline border-rose-200 bg-white text-rose-700">
-              20–35 minute dinners
-            </span>
-          </div>
-          <div className="pt-2">
-            <RecentChips items={history} onSelect={onSelectChip} />
-          </div>
-        </div>
-        <div className="relative">
-          <div className="glass rounded-2xl bg-white/60 p-5 shadow">
-            <dl className="grid grid-cols-2 gap-4 text-sm text-slate-700">
-              <Stat label="Recipes" value="Live" />
-              <Stat label="Average time" value="~30 min" />
-              <Stat label="Diet-friendly" value="Global picks" />
-              <Stat label="Built for" value="Weeknights" />
-            </dl>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div>
-      <dt className="text-xs uppercase text-slate-500">{label}</dt>
-      <dd className="text-2xl font-semibold text-slate-900">{value}</dd>
-    </div>
   );
 }
