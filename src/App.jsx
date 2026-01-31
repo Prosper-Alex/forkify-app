@@ -2,14 +2,20 @@ import { useState } from "react";
 import { NavLink, Route, Routes, Link } from "react-router-dom";
 import HomePage from "./pages/index.jsx";
 import AboutPage from "./pages/about.jsx";
+import BookmarksPage from "./pages/BookmarksPage.jsx";
+import ShoppingListPage from "./pages/ShoppingListPage.jsx";
+import NavBadgeIcons from "./components/nav/NavBadgeIcons.jsx";
 // import logo from "../public/logo.png";
 
 function App() {
   const [navOpen, setNavOpen] = useState(false);
+  const [counts] = useState({ bookmarks: 3, shopping: 5 });
   const navLinkClass = ({ isActive }) =>
     `btn btn-sm btn-ghost ${isActive ? "btn-active text-amber-600" : ""}`;
   const navItems = [
     { to: "/", label: "Home", end: true },
+    { to: "/bookmarks", label: "Bookmarks" },
+    { to: "/shopping-list", label: "Shopping List" },
     { to: "/about", label: "About" },
   ];
 
@@ -56,6 +62,7 @@ function App() {
             >
               Browse recipes
             </a>
+            <NavBadgeIcons bookmarks={counts.bookmarks} shopping={counts.shopping} />
           </nav>
         </div>
 
@@ -88,6 +95,8 @@ function App() {
       <main className="container mx-auto flex flex-1 px-6 py-12">
         <Routes>
           <Route element={<HomePage />} path="/" />
+          <Route element={<BookmarksPage />} path="/bookmarks" />
+          <Route element={<ShoppingListPage />} path="/shopping-list" />
           <Route element={<AboutPage />} path="/about" />
         </Routes>
       </main>
