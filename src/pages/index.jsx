@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import useApi from "../hooks/useApi.jsx";
 import SearchBar from "../components/search-history/SearchBar.jsx";
 import RecentChips from "../components/search-history/RecentChips.jsx";
 import MealCard from "../components/recipes/MealCard.jsx";
@@ -12,8 +12,17 @@ export default function IndexPage() {
   const [selectedId, setSelectedId] = useState("");
   const [history, setHistory] = useState([]);
 
-  const categoriesQuery = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
-  const mealsQuery = useQuery({ queryKey: ["meals", query], queryFn: () => fetchMeals(query) });
+  const categoriesQuery = useApi((signal) => fetchCategories(signal), []);
+  const mealsQuery = useApi(
+    (signal) => fetchMeals(query, signal, activeTag),
+    [query, activeTag],
+  );
+
+  const handleCategoryClick = (e) => {
+    const cat = e.currentTarget.dataset.category;
+    if (!cat) return;
+    setActiveTag(cat);
+  };
 
   const filteredMeals = useMemo(() => {
     const allMeals = mealsQuery.data ?? [];
@@ -29,14 +38,15 @@ export default function IndexPage() {
     }
   }, [filteredMeals, selectedId]);
 
-  const detailQuery = useQuery({
-    queryKey: ["meal", selectedId],
-    queryFn: () => fetchMealById(selectedId),
-    enabled: Boolean(selectedId),
-  });
+  const detailQuery = useApi(
+    (signal) => fetchMealById(selectedId, signal),
+    [selectedId],
+  );
 
   const selectedRecipe =
-    detailQuery.data || filteredMeals.find((m) => m.id === selectedId) || filteredMeals[0];
+    detailQuery.data ||
+    filteredMeals.find((m) => m.id === selectedId) ||
+    filteredMeals[0];
   const tags = categoriesQuery.data ?? [{ id: "all", label: "All" }];
 
   const addHistory = (term) => {
@@ -53,8 +63,7 @@ export default function IndexPage() {
 
       <div
         id="recipes"
-        className="scroll-mt-28 flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-sm"
-      >
+        className="scroll-mt-28 flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <SearchBar
             value={query}
@@ -62,48 +71,62 @@ export default function IndexPage() {
             onSubmit={addHistory}
             history={history}
             onSelectHistory={(term) => setQuery(term)}
-            onRemoveHistory={(term) => setHistory((prev) => prev.filter((t) => t !== term))}
+            onRemoveHistory={(term) =>
+              setHistory((prev) => prev.filter((t) => t !== term))
+            }
             onClearHistory={() => setHistory([])}
           />
           <div className="flex items-center gap-2 text-sm text-base-content/70">
             <span className="badge badge-sm bg-amber-100 text-amber-700">
-              {mealsQuery.isLoading ? "…" : filteredMeals.length} matches
+              {mealsQuery.loading ? "…" : filteredMeals.length} matches
             </span>
             <span className="hidden md:inline text-xs">•</span>
-            <span className="hidden md:inline">Tap a card to open full recipe →</span>
+            <span className="hidden md:inline">
+              Tap a card to open full recipe →
+            </span>
           </div>
         </div>
 
+        {mealsQuery.error && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            Error loading meals: {mealsQuery.error.message}
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => {
-            const isActive = activeTag === tag.id;
-            return (
-              <button
-                key={tag.id}
-                type="button"
-                onClick={() => setActiveTag(tag.id)}
-                className={`btn btn-sm rounded-full ${
-                  isActive
-                    ? "btn-primary border-0 bg-amber-500 text-white"
-                    : "btn-ghost border border-base-300 bg-white text-base-content"
-                }`}
-              >
-                {tag.label}
-              </button>
-            );
-          })}
+          {categoriesQuery.error ? (
+            <div className="text-sm text-red-600">Error loading categories</div>
+          ) : (
+            tags.map((tag) => {
+              const isActive = activeTag === tag.id;
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  data-category={tag.id}
+                  onClick={handleCategoryClick}
+                  className={`btn btn-sm rounded-full ${
+                    isActive
+                      ? "btn-primary border-0 bg-amber-500 text-white"
+                      : "btn-ghost border border-base-300 bg-white text-base-content"
+                  }`}>
+                  {tag.label}
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         <div className="grid gap-4 sm:grid-cols-2">
-          {mealsQuery.isLoading && (
+          {mealsQuery.loading && (
             <div className="col-span-2 flex items-center justify-center rounded-2xl border border-base-200 bg-base-100 p-10">
               <span className="loading loading-dots loading-lg text-amber-500" />
             </div>
           )}
 
-          {!mealsQuery.isLoading &&
+          {!mealsQuery.loading &&
             filteredMeals.map((recipe) => (
               <MealCard
                 key={recipe.id}
@@ -113,9 +136,11 @@ export default function IndexPage() {
               />
             ))}
 
-          {!mealsQuery.isLoading && filteredMeals.length === 0 && (
+          {!mealsQuery.loading && filteredMeals.length === 0 && (
             <div className="col-span-2 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-base-content/70">
-              <p className="text-lg font-semibold text-base-content">No recipes found</p>
+              <p className="text-lg font-semibold text-base-content">
+                No recipes found
+              </p>
               <p>Try a different ingredient or clear your filters.</p>
             </div>
           )}
@@ -131,7 +156,7 @@ export default function IndexPage() {
 
 function Hero({ history, onSelectChip }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-100 via-orange-50 to-rose-100 px-8 py-10 shadow-lg ring-1 ring-orange-200/60">
+    <div className="relative overflow-hidden rounded-3xl  bg-linear-to-r from-amber-100 via-orange-50 to-rose-100 px-8 py-10 shadow-lg ring-1 ring-orange-200/60">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.9),transparent_45%)]" />
       <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl space-y-3">
@@ -142,8 +167,9 @@ function Hero({ history, onSelectChip }) {
             Find a recipe, cook it fully, and enjoy the win.
           </h1>
           <p className="text-base text-slate-700 md:text-lg">
-            Search across chef-tested dishes, skim the cards, then open a complete recipe with timing,
-            servings, ingredients, steps, and nutrition at a glance.
+            Search across chef-tested dishes, skim the cards, then open a
+            complete recipe with timing, servings, ingredients, steps, and
+            nutrition at a glance.
           </p>
           <div className="flex flex-wrap gap-3 text-sm text-slate-700">
             <span className="badge badge-outline border-amber-300 bg-white text-amber-700">

@@ -1,8 +1,8 @@
 const API = "https://www.themealdb.com/api/json/v1/1";
 const FALLBACK_QUERY = "chicken";
 
-async function fetchJson(url) {
-  const response = await fetch(url);
+async function fetchJson(url, signal) {
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error("Network error");
   return response.json();
 }
@@ -17,9 +17,33 @@ export async function fetchCategories() {
   return [{ id: "all", label: "All" }, ...categories];
 }
 
-export async function fetchMeals(query) {
-  const searchTerm = query.trim() || FALLBACK_QUERY;
-  const data = await fetchJson(`${API}/search.php?s=${encodeURIComponent(searchTerm)}`);
+export async function fetchMeals(query, signal, category) {
+  if (category && category !== "all") {
+    const data = await fetchJson(
+      `${API}/filter.php?c=${encodeURIComponent(category)}`,
+      signal,
+    );
+    const minimal = data?.meals ?? [];
+    return minimal.map((m) => ({
+      id: m.idMeal,
+      title: m.strMeal,
+      description: category,
+      image: m.strMealThumb,
+      time: 30,
+      servings: 2,
+      difficulty: "Home Cook",
+      tags: [category.toLowerCase()],
+      ingredients: [],
+      steps: ["Open the recipe for full details."],
+      nutrition: { calories: "—", protein: "—", carbs: "—", fat: "—" },
+    }));
+  }
+
+  const searchTerm = (query || "").trim() || FALLBACK_QUERY;
+  const data = await fetchJson(
+    `${API}/search.php?s=${encodeURIComponent(searchTerm)}`,
+    signal,
+  );
   return mapMeals(data?.meals ?? []);
 }
 
@@ -37,7 +61,9 @@ export function mapMeals(rawMeals) {
       const measure = meal[`strMeasure${i}`];
       if (ingredient && ingredient.trim()) {
         const label =
-          measure && measure.trim() ? `${measure.trim()} ${ingredient.trim()}` : ingredient.trim();
+          measure && measure.trim()
+            ? `${measure.trim()} ${ingredient.trim()}`
+            : ingredient.trim();
         ingredients.push(label);
       }
     }
@@ -51,20 +77,26 @@ export function mapMeals(rawMeals) {
     const tags = [
       meal.strCategory?.toLowerCase(),
       meal.strArea?.toLowerCase(),
-      ...(meal.strTags ? meal.strTags.split(",").map((t) => t.trim().toLowerCase()) : []),
+      ...(meal.strTags
+        ? meal.strTags.split(",").map((t) => t.trim().toLowerCase())
+        : []),
     ].filter(Boolean);
 
     return {
       id: meal.idMeal,
       title: meal.strMeal,
-      description: meal.strArea ? `${meal.strArea} • ${meal.strCategory}` : meal.strCategory || "Recipe",
+      description: meal.strArea
+        ? `${meal.strArea} • ${meal.strCategory}`
+        : meal.strCategory || "Recipe",
       image: meal.strMealThumb,
       time: 30,
       servings: 2,
       difficulty: tags.includes("easy") ? "Easy" : "Home Cook",
       tags,
       ingredients,
-      steps: steps.length ? steps : ["Follow the instructions in TheMealDB response."],
+      steps: steps.length
+        ? steps
+        : ["Follow the instructions in TheMealDB response."],
       nutrition: { calories: "—", protein: "—", carbs: "—", fat: "—" },
     };
   });
