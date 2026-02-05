@@ -1,46 +1,41 @@
 import { useMemo, useState } from "react";
 import BookmarkCard from "../components/bookmarks/BookmarkCard.jsx";
+import { useBookmarks } from "../contexts/BookmarksContext.jsx";
 
-const sample = [
-  {
-    id: "1",
-    title: "Teriyaki Chicken",
-    category: "Dinner",
-    area: "Japanese",
-    tags: ["savory"],
-    image:
-      "https://images.unsplash.com/photo-1604908177445-03e3ba9694f1?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "2",
-    title: "Tiramisu",
-    category: "Dessert",
-    area: "Italian",
-    tags: ["sweet"],
-    image:
-      "https://images.unsplash.com/photo-1504674900247-08a16b5e43cd?auto=format&fit=crop&w=800&q=80",
-  },
-];
-
-const tabs = ["All", "Breakfast", "Dinner", "Dessert", "Custom"];
 const sortOptions = ["Name", "Category", "Area", "Recently added"];
 
 export default function BookmarksPage() {
+  const { bookmarks } = useBookmarks();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [sort, setSort] = useState("Recently added");
 
+  const tabs = useMemo(() => {
+    const cats = Array.from(new Set(bookmarks.map((b) => b.category).filter(Boolean)));
+    cats.sort((a, b) => a.localeCompare(b));
+    return ["All", ...cats];
+  }, [bookmarks]);
+
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
-    return sample.filter(
-      (m) =>
-        (!q ||
-          m.title.toLowerCase().includes(q) ||
-          m.category.toLowerCase().includes(q) ||
-          m.area.toLowerCase().includes(q)) &&
-        (activeTab === "All" || m.category.toLowerCase() === activeTab.toLowerCase()),
-    );
-  }, [query, activeTab]);
+    const list = bookmarks.filter((m) => {
+      const title = (m.title || "").toLowerCase();
+      const category = (m.category || "").toLowerCase();
+      const area = (m.area || "").toLowerCase();
+      const matchesQuery = !q || title.includes(q) || category.includes(q) || area.includes(q);
+      const matchesTab =
+        activeTab === "All" || category === activeTab.toLowerCase();
+      return matchesQuery && matchesTab;
+    });
+
+    const sorted = [...list];
+    if (sort === "Name") sorted.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    if (sort === "Category")
+      sorted.sort((a, b) => (a.category || "").localeCompare(b.category || ""));
+    if (sort === "Area") sorted.sort((a, b) => (a.area || "").localeCompare(b.area || ""));
+    if (sort === "Recently added") sorted.sort((a, b) => (b.addedAt || "").localeCompare(a.addedAt || ""));
+    return sorted;
+  }, [bookmarks, query, activeTab, sort]);
 
   return (
     <section className="flex w-full flex-col gap-6">

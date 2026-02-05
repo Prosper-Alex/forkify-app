@@ -108,8 +108,9 @@ export default function IndexPage() {
                   className={`btn btn-sm rounded-full ${
                     isActive
                       ? "btn-primary border-0 bg-amber-500 text-white"
-                      : "btn-ghost border border-base-300 bg-white text-base-content"
+                      : "btn-ghost border border-base-300 bg-base-100 text-base-content hover:bg-base-200/60"
                   }`}>
+                  {" "}
                   {tag.label}
                 </button>
               );
@@ -146,8 +147,14 @@ export default function IndexPage() {
           )}
         </div>
 
-        <aside className="flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg">
-          <MealDetailPanel recipe={selectedRecipe} />
+        <aside className="min-h-0 flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:self-start">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 pr-2">
+            <MealDetailPanel
+              recipe={selectedRecipe}
+              loading={detailQuery.loading}
+              error={detailQuery.error}
+            />
+          </div>
         </aside>
       </div>
     </section>

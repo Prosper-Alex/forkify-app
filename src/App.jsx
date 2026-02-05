@@ -5,11 +5,14 @@ import AboutPage from "./pages/about.jsx";
 import BookmarksPage from "./pages/BookmarksPage.jsx";
 import ShoppingListPage from "./pages/ShoppingListPage.jsx";
 import NavBadgeIcons from "./components/nav/NavBadgeIcons.jsx";
+import { useBookmarks } from "./contexts/BookmarksContext.jsx";
+import { useShoppingList } from "./contexts/ShoppingListContext.jsx";
 // import logo from "../public/logo.png";
 
 function App() {
   const [navOpen, setNavOpen] = useState(false);
-  const [counts] = useState({ bookmarks: 3, shopping: 5 });
+  const { count: bookmarksCount } = useBookmarks();
+  const { count: shoppingCount } = useShoppingList();
   const navLinkClass = ({ isActive }) =>
     `btn btn-sm btn-ghost ${isActive ? "btn-active text-amber-600" : ""}`;
   const navItems = [
@@ -62,7 +65,7 @@ function App() {
             >
               Browse recipes
             </a>
-            <NavBadgeIcons bookmarks={counts.bookmarks} shopping={counts.shopping} />
+            <NavBadgeIcons bookmarks={bookmarksCount} shopping={shoppingCount} />
           </nav>
         </div>
 

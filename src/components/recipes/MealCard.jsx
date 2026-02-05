@@ -1,6 +1,10 @@
 import BookmarkToggleButton from "../bookmarks/BookmarkToggleButton.jsx";
+import { useBookmarks } from "../../contexts/BookmarksContext.jsx";
 
 export default function MealCard({ recipe, active, onSelect }) {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const bookmarked = isBookmarked(recipe.id);
+
   return (
     <article
       onClick={onSelect}
@@ -16,7 +20,11 @@ export default function MealCard({ recipe, active, onSelect }) {
           loading="lazy"
         />
         <div className="absolute right-2 top-2 flex gap-1">
-          <BookmarkToggleButton size="sm" />
+          <BookmarkToggleButton
+            size="sm"
+            on={bookmarked}
+            onToggle={() => toggleBookmark(recipe)}
+          />
         </div>
         <span className="absolute left-3 top-3 rounded-full bg-black/65 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
           {recipe.time} min • {recipe.difficulty}

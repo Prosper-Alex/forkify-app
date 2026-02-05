@@ -27,6 +27,8 @@ export async function fetchMeals(query, signal, category) {
     return minimal.map((m) => ({
       id: m.idMeal,
       title: m.strMeal,
+      category,
+      area: "",
       description: category,
       image: m.strMealThumb,
       time: 30,
@@ -85,6 +87,8 @@ export function mapMeals(rawMeals) {
     return {
       id: meal.idMeal,
       title: meal.strMeal,
+      category: meal.strCategory || "",
+      area: meal.strArea || "",
       description: meal.strArea
         ? `${meal.strArea} • ${meal.strCategory}`
         : meal.strCategory || "Recipe",
