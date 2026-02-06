@@ -1,16 +1,22 @@
 import { useState } from "react";
 
 export default function BookmarkToggleButton({
+  on: controlledOn,
   initialOn = false,
   onToggle,
   size = "md",
+  stopPropagation = true,
+  disabled = false,
 }) {
-  const [on, setOn] = useState(initialOn);
+  const [uncontrolledOn, setUncontrolledOn] = useState(initialOn);
+  const on = controlledOn ?? uncontrolledOn;
   const sizes = { sm: "h-8 w-8", md: "h-9 w-9", lg: "h-10 w-10" };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    if (stopPropagation) e.stopPropagation();
+    if (disabled) return;
     const next = !on;
-    setOn(next);
+    if (controlledOn == null) setUncontrolledOn(next);
     onToggle?.(next);
   };
 
@@ -18,7 +24,8 @@ export default function BookmarkToggleButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`btn btn-circle btn-ghost ${sizes[size]} border border-base-200 hover:border-amber-400`}
+      disabled={disabled}
+      className={`btn btn-circle btn-ghost ${sizes[size]} border border-base-200 hover:border-amber-400 disabled:opacity-60`}
       aria-pressed={on}
       title={on ? "Remove bookmark" : "Add bookmark"}
     >
