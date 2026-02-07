@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hooks/useApi.jsx";
 import useMediaQuery from "../hooks/useMediaQuery.jsx";
@@ -7,6 +7,7 @@ import RecentChips from "../components/search-history/RecentChips.jsx";
 import MealCard from "../components/recipes/MealCard.jsx";
 import MealDetailPanel from "../components/recipes/MealDetailPanel.jsx";
 import SectionHeader from "../components/layout/SectionHeader.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 import { fetchCategories, fetchMealById, fetchMeals } from "../utils/mealdb.js";
 
 const areasSample = ["Italian", "Mexican", "Japanese", "Indian", "French", "Greek"];
@@ -29,6 +30,14 @@ export default function IndexPage() {
   const [selectedId, setSelectedId] = useState("");
   const [history, setHistory] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const detailScrollRef = useRef(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
+  const homeTitle = query.trim()
+    ? `Search: ${query.trim()}`
+    : activeTag !== "all"
+      ? `Category: ${activeTag}`
+      : "Home";
+  useDocumentTitle(homeTitle);
 
   const categoriesQuery = useApi((signal) => fetchCategories(signal), []);
   const mealsQuery = useApi(
@@ -69,12 +78,22 @@ export default function IndexPage() {
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, filteredMeals.length);
   const pagedMeals = filteredMeals.slice(startIndex, endIndex);
-  const windowStart = Math.max(1, currentPage - 2);
-  const windowEnd = Math.min(totalPages, windowStart + 4);
-  const pageButtons = Array.from(
-    { length: windowEnd - windowStart + 1 },
-    (_, index) => windowStart + index,
-  );
+  const pageButtons = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages = [1];
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+
+    if (left > 2) pages.push("...");
+    for (let page = left; page <= right; page += 1) pages.push(page);
+    if (right < totalPages - 1) pages.push("...");
+    pages.push(totalPages);
+
+    return pages;
+  }, [currentPage, totalPages]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -83,6 +102,26 @@ export default function IndexPage() {
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    const scroller = detailScrollRef.current;
+    if (!scroller) return undefined;
+
+    const updateScrollState = () => {
+      const canScrollMore =
+        scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 6;
+      setShowScrollDown(canScrollMore);
+    };
+
+    updateScrollState();
+    scroller.addEventListener("scroll", updateScrollState, { passive: true });
+    window.addEventListener("resize", updateScrollState);
+
+    return () => {
+      scroller.removeEventListener("scroll", updateScrollState);
+      window.removeEventListener("resize", updateScrollState);
+    };
+  }, [selectedId, selectedRecipe]);
 
   const addHistory = (term) => {
     if (!term.trim()) return;
@@ -155,44 +194,46 @@ export default function IndexPage() {
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="flex min-w-0 flex-1 flex-wrap gap-4">
-          {mealsQuery.loading && (
-            <div className="w-full flex items-center justify-center rounded-2xl border border-base-200 bg-base-100 p-10">
-              <span className="loading loading-dots loading-lg text-amber-500" />
-            </div>
-          )}
-
-          {!mealsQuery.loading &&
-            pagedMeals.map((recipe) => (
-              <div
-                key={recipe.id}
-                className={`flex basis-full sm:basis-[48%] ${
-                  selectedId ? "lg:basis-[31%]" : "lg:basis-[23%]"
-                }`}>
-                <MealCard
-                  recipe={recipe}
-                  active={selectedId && recipe.id === selectedId}
-                  showDetailsButton={!desktopLayout}
-                  onSelect={() => {
-                    if (desktopLayout) {
-                      setSelectedId((prev) => (prev === recipe.id ? "" : recipe.id));
-                    } else navigate(`/meal/${recipe.id}`);
-                  }}
-                />
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <div className="flex min-w-0 flex-wrap gap-4">
+            {mealsQuery.loading && (
+              <div className="w-full flex items-center justify-center rounded-2xl border border-base-200 bg-base-100 p-10">
+                <span className="loading loading-dots loading-lg text-amber-500" />
               </div>
-            ))}
+            )}
 
-          {!mealsQuery.loading && filteredMeals.length === 0 && (
-            <div className="w-full flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-base-content/70">
-              <p className="text-lg font-semibold text-base-content">
-                No recipes found
-              </p>
-              <p>Try a different ingredient or clear your filters.</p>
-            </div>
-          )}
+            {!mealsQuery.loading &&
+              pagedMeals.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className={`flex basis-full sm:basis-[48%] ${
+                    selectedId ? "lg:basis-[31%]" : "lg:basis-[23%]"
+                  }`}>
+                  <MealCard
+                    recipe={recipe}
+                    active={selectedId && recipe.id === selectedId}
+                    showDetailsButton={!desktopLayout}
+                    onSelect={() => {
+                      if (desktopLayout) {
+                        setSelectedId((prev) => (prev === recipe.id ? "" : recipe.id));
+                      } else navigate(`/meal/${recipe.id}`);
+                    }}
+                  />
+                </div>
+              ))}
+
+            {!mealsQuery.loading && filteredMeals.length === 0 && (
+              <div className="w-full flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-base-content/70">
+                <p className="text-lg font-semibold text-base-content">
+                  No recipes found
+                </p>
+                <p>Try a different ingredient or clear your filters.</p>
+              </div>
+            )}
+          </div>
 
           {!mealsQuery.loading && filteredMeals.length > 0 && (
-            <div className="w-full rounded-2xl border border-base-200 bg-base-100 px-4 py-3">
+            <div className="rounded-2xl border border-base-200 bg-base-100 px-4 py-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-base-content/70">
                   Showing <span className="font-semibold">{startIndex + 1}</span>-
@@ -204,24 +245,39 @@ export default function IndexPage() {
                   <button
                     type="button"
                     className="btn btn-sm btn-ghost border border-base-300 disabled:opacity-40"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}>
+                    First
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost border border-base-300 disabled:opacity-40"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}>
                     Prev
                   </button>
                   <div className="flex items-center gap-1">
-                    {pageButtons.map((page) => (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => setCurrentPage(page)}
-                        className={`btn btn-sm min-w-9 ${
-                          page === currentPage
-                            ? "border-0 bg-amber-500 text-white"
-                            : "btn-ghost border border-base-300"
-                        }`}>
-                        {page}
-                      </button>
-                    ))}
+                    {pageButtons.map((page, index) =>
+                      page === "..." ? (
+                        <span
+                          key={`ellipsis-${index}`}
+                          className="px-2 text-base-content/60">
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          type="button"
+                          onClick={() => setCurrentPage(page)}
+                          className={`btn btn-sm min-w-9 ${
+                            page === currentPage
+                              ? "border-0 bg-amber-500 text-white"
+                              : "btn-ghost border border-base-300"
+                          }`}>
+                          {page}
+                        </button>
+                      ),
+                    )}
                   </div>
                   <button
                     type="button"
@@ -232,6 +288,13 @@ export default function IndexPage() {
                     disabled={currentPage === totalPages}>
                     Next
                   </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost border border-base-300 disabled:opacity-40"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}>
+                    Last
+                  </button>
                 </div>
               </div>
             </div>
@@ -239,16 +302,18 @@ export default function IndexPage() {
         </div>
 
         <aside
-          className={`hidden overflow-hidden transition-all duration-500 ease-out lg:sticky lg:top-24 lg:block lg:self-start ${
+          className={`hidden overflow-hidden transition-all duration-500 ease-out lg:sticky lg:top-24 lg:flex lg:h-[calc(100vh-7rem)] lg:self-start ${
             selectedId
               ? "lg:flex-[0_1_33%] opacity-100"
               : "lg:flex-[0_1_0%] opacity-0 pointer-events-none"
           }`}>
           <div
-            className={`rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg transition-transform duration-500 ease-out ${
+            className={`relative min-h-0 h-full rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg transition-transform duration-500 ease-out ${
               selectedId ? "translate-x-0" : "translate-x-10"
             }`}>
-            <div className="pb-2 pr-2">
+            <div
+              ref={detailScrollRef}
+              className="detail-panel-scroll min-h-0 h-full overflow-y-auto overscroll-contain pb-2 pr-2">
               <MealDetailPanel
                 recipe={selectedRecipe}
                 loading={detailQuery.loading}
@@ -256,6 +321,18 @@ export default function IndexPage() {
                 onClose={() => setSelectedId("")}
               />
             </div>
+            {showScrollDown && (
+              <button
+                type="button"
+                aria-label="Scroll down"
+                title="Scroll down"
+                className="absolute bottom-4 right-4 btn btn-circle btn-sm border-0 bg-amber-500 text-white shadow-lg shadow-amber-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-600"
+                onClick={() => {
+                  detailScrollRef.current?.scrollBy({ top: 220, behavior: "smooth" });
+                }}>
+                ↓
+              </button>
+            )}
           </div>
         </aside>
       </div>
