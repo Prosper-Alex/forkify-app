@@ -14,17 +14,18 @@ export default function MealCard({
   return (
     <article
       onClick={onSelect}
-      className={`group flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-base-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow ${
+      className={`group flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-base-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow ${
         active ? "border-amber-400 ring-2 ring-amber-200/80" : "border-base-200"
       }`}
     >
-      <div className="relative h-40 overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden">
         <img
           src={recipe.image}
           alt={recipe.title}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           loading="lazy"
         />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-950/60 via-slate-900/25 to-transparent shadow-[0_14px_24px_rgba(15,23,42,0.35)]" />
         <div className="absolute right-2 top-2 flex gap-1">
           <BookmarkToggleButton
             size="sm"
@@ -70,3 +71,4 @@ export default function MealCard({
     </article>
   );
 }
+

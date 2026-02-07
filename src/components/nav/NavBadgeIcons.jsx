@@ -17,19 +17,20 @@ export default function NavBadgeIcons({ bookmarks = 0, shopping = 0 }) {
 
 function BadgeIcon({ label, count, iconPath }) {
   const display = count > 99 ? "99+" : count.toString();
+  const isBookmark = label === "Bookmarks";
   return (
     <button
       type="button"
-      className="relative btn btn-circle btn-ghost"
+      className="relative btn btn-circle btn-ghost text-base-content transition-all duration-300 ease-out hover:scale-105 hover:bg-amber-100/70 hover:text-amber-700 active:scale-95"
       title={label}
       aria-label={label}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        fill="none"
+        fill={isBookmark ? "currentColor" : "none"}
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth={isBookmark ? "1.2" : "1.8"}
         className="h-5 w-5"
       >
         <path d={iconPath} strokeLinecap="round" strokeLinejoin="round" />

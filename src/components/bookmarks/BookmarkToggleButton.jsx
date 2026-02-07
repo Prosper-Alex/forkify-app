@@ -11,6 +11,9 @@ export default function BookmarkToggleButton({
   const [uncontrolledOn, setUncontrolledOn] = useState(initialOn);
   const on = controlledOn ?? uncontrolledOn;
   const sizes = { sm: "h-8 w-8", md: "h-9 w-9", lg: "h-10 w-10" };
+  const buttonTone = on
+    ? "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/40"
+    : "bg-amber-500/90 text-white border-amber-400 shadow-sm shadow-amber-500/25";
 
   const handleClick = (e) => {
     if (stopPropagation) e.stopPropagation();
@@ -25,7 +28,7 @@ export default function BookmarkToggleButton({
       type="button"
       onClick={handleClick}
       disabled={disabled}
-      className={`btn btn-circle btn-ghost ${sizes[size]} border border-base-200 hover:border-amber-400 disabled:opacity-60`}
+      className={`btn btn-circle ${sizes[size]} border transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-105 hover:bg-amber-600 hover:shadow-md active:scale-95 disabled:opacity-60 ${buttonTone}`}
       aria-pressed={on}
       title={on ? "Remove bookmark" : "Add bookmark"}
     >
@@ -35,7 +38,7 @@ export default function BookmarkToggleButton({
         viewBox="0 0 24 24"
         strokeWidth="1.5"
         stroke="currentColor"
-        className="h-5 w-5 text-amber-500"
+        className="h-5 w-5"
       >
         <path
           strokeLinecap="round"
@@ -46,3 +49,4 @@ export default function BookmarkToggleButton({
     </button>
   );
 }
+

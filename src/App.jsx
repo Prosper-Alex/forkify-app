@@ -19,7 +19,14 @@ function App() {
   const { count: bookmarksCount } = useBookmarks();
   const { count: shoppingCount } = useShoppingList();
   const navLinkClass = ({ isActive }) =>
-    `btn btn-sm btn-ghost ${isActive ? "btn-active text-amber-600" : ""}`;
+    [
+      "btn btn-sm btn-ghost relative overflow-hidden rounded-xl transition-all duration-300 ease-out",
+      "hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-amber-100/70 hover:shadow-sm",
+      "active:translate-y-0 active:scale-95 active:duration-100",
+      isActive
+        ? "bg-amber-100 text-amber-700 shadow-sm ring-1 ring-amber-300"
+        : "text-base-content/80",
+    ].join(" ");
   const navItems = [
     { to: "/", label: "Home", end: true },
     { to: "/bookmarks", label: "Bookmarks" },
@@ -43,7 +50,7 @@ function App() {
 
           <button
             type="button"
-            className="btn btn-ghost btn-sm md:hidden"
+            className="btn btn-ghost btn-sm transition-all duration-300 ease-out hover:scale-105 hover:bg-amber-100/70 active:scale-95 active:duration-100 md:hidden"
             aria-label="Toggle navigation"
             aria-expanded={navOpen}
             onClick={() => setNavOpen((open) => !open)}>
@@ -73,7 +80,7 @@ function App() {
               </NavLink>
             ))}
             <a
-              className="btn btn-sm shadow-sm bg-amber-500 text-white hover:bg-amber-600"
+              className="btn btn-sm bg-amber-500 text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-amber-600 hover:shadow-md active:scale-95 active:duration-100"
               href="#recipes"
               onClick={() => setNavOpen(false)}>
               Browse recipes
@@ -85,28 +92,29 @@ function App() {
           </nav>
         </div>
 
-        {navOpen && (
-          <div className="border-t border-base-200 bg-base-100 md:hidden">
-            <nav className="container mx-auto flex flex-col gap-2 px-4 py-3">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={navLinkClass}
-                  onClick={() => setNavOpen(false)}>
-                  {item.label}
-                </NavLink>
-              ))}
-              <a
-                className="btn btn-sm btn-primary shadow-sm"
-                href="#recipes"
+        <div
+          className={`overflow-hidden border-t border-base-200 bg-base-100 transition-all duration-300 ease-out md:hidden ${
+            navOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
+          }`}>
+          <nav className="container mx-auto flex flex-col gap-2 px-4 py-3">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={navLinkClass}
                 onClick={() => setNavOpen(false)}>
-                Browse recipes
-              </a>
-            </nav>
-          </div>
-        )}
+                {item.label}
+              </NavLink>
+            ))}
+            <a
+              className="btn btn-sm bg-amber-500 text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-amber-600 hover:shadow-md active:scale-95 active:duration-100"
+              href="#recipes"
+              onClick={() => setNavOpen(false)}>
+              Browse recipes
+            </a>
+          </nav>
+        </div>
       </header>
 
       <main className="container mx-auto flex flex-1 px-6 py-12">

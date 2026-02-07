@@ -4,7 +4,12 @@ import AddToShoppingButton from "../shopping-list/AddToShoppingButton.jsx";
 import { useBookmarks } from "../../contexts/BookmarksContext.jsx";
 import { useShoppingList } from "../../contexts/ShoppingListContext.jsx";
 
-export default function MealDetailPanel({ recipe, loading = false, error = null }) {
+export default function MealDetailPanel({
+  recipe,
+  loading = false,
+  error = null,
+  onClose,
+}) {
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const { addIngredientsFromRecipe } = useShoppingList();
   const [notice, setNotice] = useState(null);
@@ -49,7 +54,7 @@ export default function MealDetailPanel({ recipe, loading = false, error = null 
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <div className="flex items-center justify-between gap-2">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-base-content/60">
@@ -65,6 +70,28 @@ export default function MealDetailPanel({ recipe, loading = false, error = null 
           <span className="badge badge-lg bg-amber-100 text-amber-700">
             {recipe.time} min
           </span>
+          {onClose && (
+            <button
+              type="button"
+              aria-label="Close recipe panel"
+              title="Close"
+              onClick={onClose}
+              className="btn btn-circle btn-sm btn-ghost border border-base-200 transition-all duration-200 hover:border-amber-300 hover:bg-amber-100/70">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="h-4 w-4">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 6l12 12M18 6l-12 12"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -104,13 +131,6 @@ export default function MealDetailPanel({ recipe, loading = false, error = null 
             {recipe.difficulty}
           </span>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <Stat label="Calories" value={`${recipe.nutrition.calories}`} />
-        <Stat label="Protein" value={`${recipe.nutrition.protein}`} />
-        <Stat label="Carbs" value={`${recipe.nutrition.carbs}`} />
-        <Stat label="Fat" value={`${recipe.nutrition.fat}`} />
       </div>
 
       <div className="space-y-2">
@@ -156,17 +176,6 @@ export default function MealDetailPanel({ recipe, loading = false, error = null 
           ))}
         </ol>
       </div>
-    </>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div className="rounded-xl border border-base-200 bg-base-50 px-3 py-2">
-      <p className="text-xs uppercase tracking-wide text-base-content/60">
-        {label}
-      </p>
-      <p className="text-lg font-semibold text-base-content">{value}</p>
     </div>
   );
 }

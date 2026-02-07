@@ -28,6 +28,7 @@ export default function IndexPage() {
   const [activeTag, setActiveTag] = useState("all");
   const [selectedId, setSelectedId] = useState("");
   const [history, setHistory] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const categoriesQuery = useApi((signal) => fetchCategories(signal), []);
   const mealsQuery = useApi(
@@ -61,10 +62,27 @@ export default function IndexPage() {
   );
 
   const selectedRecipe =
-    detailQuery.data ||
-    filteredMeals.find((m) => m.id === selectedId) ||
-    filteredMeals[0];
+    detailQuery.data || filteredMeals.find((m) => m.id === selectedId);
   const tags = categoriesQuery.data ?? [{ id: "all", label: "All" }];
+  const pageSize = 8;
+  const totalPages = Math.max(1, Math.ceil(filteredMeals.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredMeals.length);
+  const pagedMeals = filteredMeals.slice(startIndex, endIndex);
+  const windowStart = Math.max(1, currentPage - 2);
+  const windowEnd = Math.min(totalPages, windowStart + 4);
+  const pageButtons = Array.from(
+    { length: windowEnd - windowStart + 1 },
+    (_, index) => windowStart + index,
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, activeTag]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   const addHistory = (term) => {
     if (!term.trim()) return;
@@ -94,12 +112,12 @@ export default function IndexPage() {
             onClearHistory={() => setHistory([])}
           />
           <div className="flex items-center gap-2 text-sm text-base-content/70">
-            <span className="badge badge-sm bg-amber-100 text-amber-700">
-              {mealsQuery.loading ? "…" : filteredMeals.length} matches
+            <span className="badge badge-sm min-w-[7.5rem] justify-center bg-amber-100 px-2 font-semibold tabular-nums text-amber-700">
+              {mealsQuery.loading ? "..." : filteredMeals.length} matches
             </span>
-            <span className="hidden md:inline text-xs">•</span>
+            <span className="hidden text-xs md:inline">|</span>
             <span className="hidden md:inline">
-              Tap a card to open full recipe →
+              Tap a card to open full recipe ->
             </span>
           </div>
         </div>
@@ -136,45 +154,108 @@ export default function IndexPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="flex min-w-0 flex-1 flex-wrap gap-4">
           {mealsQuery.loading && (
-            <div className="col-span-2 flex items-center justify-center rounded-2xl border border-base-200 bg-base-100 p-10">
+            <div className="w-full flex items-center justify-center rounded-2xl border border-base-200 bg-base-100 p-10">
               <span className="loading loading-dots loading-lg text-amber-500" />
             </div>
           )}
 
           {!mealsQuery.loading &&
-            filteredMeals.map((recipe) => (
-              <MealCard
+            pagedMeals.map((recipe) => (
+              <div
                 key={recipe.id}
-                recipe={recipe}
-                active={selectedRecipe && recipe.id === selectedRecipe.id}
-                showDetailsButton={!desktopLayout}
-                onSelect={() => {
-                  if (desktopLayout) setSelectedId(recipe.id);
-                  else navigate(`/meal/${recipe.id}`);
-                }}
-              />
+                className={`flex basis-full sm:basis-[48%] ${
+                  selectedId ? "lg:basis-[31%]" : "lg:basis-[23%]"
+                }`}>
+                <MealCard
+                  recipe={recipe}
+                  active={selectedId && recipe.id === selectedId}
+                  showDetailsButton={!desktopLayout}
+                  onSelect={() => {
+                    if (desktopLayout) {
+                      setSelectedId((prev) => (prev === recipe.id ? "" : recipe.id));
+                    } else navigate(`/meal/${recipe.id}`);
+                  }}
+                />
+              </div>
             ))}
 
           {!mealsQuery.loading && filteredMeals.length === 0 && (
-            <div className="col-span-2 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-base-content/70">
+            <div className="w-full flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center text-base-content/70">
               <p className="text-lg font-semibold text-base-content">
                 No recipes found
               </p>
               <p>Try a different ingredient or clear your filters.</p>
             </div>
           )}
+
+          {!mealsQuery.loading && filteredMeals.length > 0 && (
+            <div className="w-full rounded-2xl border border-base-200 bg-base-100 px-4 py-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-base-content/70">
+                  Showing <span className="font-semibold">{startIndex + 1}</span>-
+                  <span className="font-semibold">{endIndex}</span> of{" "}
+                  <span className="font-semibold">{filteredMeals.length}</span>{" "}
+                  recipes
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost border border-base-300 disabled:opacity-40"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}>
+                    Prev
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {pageButtons.map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`btn btn-sm min-w-9 ${
+                          page === currentPage
+                            ? "border-0 bg-amber-500 text-white"
+                            : "btn-ghost border border-base-300"
+                        }`}>
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost border border-base-300 disabled:opacity-40"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}>
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <aside className="hidden min-h-0 flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg lg:sticky lg:top-24 lg:flex lg:h-[calc(100vh-7rem)] lg:self-start">
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 pr-2">
-            <MealDetailPanel
-              recipe={selectedRecipe}
-              loading={detailQuery.loading}
-              error={detailQuery.error}
-            />
+        <aside
+          className={`hidden overflow-hidden transition-all duration-500 ease-out lg:sticky lg:top-24 lg:block lg:self-start ${
+            selectedId
+              ? "lg:flex-[0_1_33%] opacity-100"
+              : "lg:flex-[0_1_0%] opacity-0 pointer-events-none"
+          }`}>
+          <div
+            className={`rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg transition-transform duration-500 ease-out ${
+              selectedId ? "translate-x-0" : "translate-x-10"
+            }`}>
+            <div className="pb-2 pr-2">
+              <MealDetailPanel
+                recipe={selectedRecipe}
+                loading={detailQuery.loading}
+                error={detailQuery.error}
+                onClose={() => setSelectedId("")}
+              />
+            </div>
           </div>
         </aside>
       </div>
@@ -201,10 +282,10 @@ function Hero({ history, onSelectChip }) {
           </p>
           <div className="flex flex-wrap gap-3 text-sm text-slate-700">
             <span className="badge badge-outline border-amber-300 bg-white text-amber-700">
-              No scrolling safari — full details on the right
+              No scrolling safari - full details on the right
             </span>
             <span className="badge badge-outline border-rose-200 bg-white text-rose-700">
-              20–35 minute dinners
+              20-35 minute dinners
             </span>
           </div>
           <div className="pt-2">
@@ -234,3 +315,4 @@ function Stat({ label, value }) {
     </div>
   );
 }
+

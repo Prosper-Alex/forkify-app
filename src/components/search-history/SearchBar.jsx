@@ -8,7 +8,7 @@ export default function SearchBar({
   onSelectHistory,
   onRemoveHistory,
   onClearHistory,
-  placeholder = "Search meals…",
+  placeholder = "Search meals...",
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -87,7 +87,7 @@ export default function SearchBar({
                     className="btn btn-ghost btn-xs"
                     onClick={() => onRemoveHistory?.(item)}
                   >
-                    ✕
+                    x
                   </button>
                 </li>
               ))}
@@ -117,3 +117,4 @@ function SearchIcon() {
     </svg>
   );
 }
+
