@@ -117,7 +117,7 @@ export default function IndexPage() {
             </span>
             <span className="hidden text-xs md:inline">|</span>
             <span className="hidden md:inline">
-              Tap a card to open full recipe ->
+              Tap a card to open full recipe {"->"}
             </span>
           </div>
         </div>
