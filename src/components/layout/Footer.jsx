@@ -15,7 +15,7 @@ export default function Footer() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <img
-              src="./public/favicon.png"
+              src="/favicon.png"
               className="h-10 w-100% mb-6"
               alt="Forkify logo"
             />
