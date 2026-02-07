@@ -1,5 +1,6 @@
-import SectionHeader from "../components/layout/SectionHeader.jsx";
+import PageTitle from "../components/layout/PageTitle.jsx";
 import ChipsRow from "../components/home/ChipsRow.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 
 const ingredientsSample = [
   "Chicken",
@@ -21,9 +22,11 @@ const ingredientsSample = [
 ];
 
 export default function IngredientsPage() {
+  useDocumentTitle("Ingredients");
+
   return (
     <section className="flex flex-col gap-6 pb-12">
-      <SectionHeader
+      <PageTitle
         title="Ingredients"
         subtitle="Shop your pantry"
         action={<button className="btn btn-sm btn-primary">See suggestions</button>}

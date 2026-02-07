@@ -1,4 +1,8 @@
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
+
 export default function AboutPage() {
+  useDocumentTitle("About");
+
   const features = [
     "Search meals",
     "Browse categories",
