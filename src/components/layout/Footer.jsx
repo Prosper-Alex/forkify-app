@@ -14,11 +14,15 @@ export default function Footer() {
       <div className="container mx-auto grid gap-10 px-6 py-10 md:grid-cols-4">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <img src="/favicon.ico" className="h-10 w-10" alt="Forkify logo" />
-            <span className="text-lg font-semibold">Forkify Kitchen</span>
+            <img
+              src="./public/favicon.png"
+              className="h-10 w-100% mb-6"
+              alt="Forkify logo"
+            />
           </div>
           <p className="text-sm text-base-content/70">
-            Premium recipe browsing powered by TheMealDB with quick bookmarks and shopping lists.
+            Premium recipe browsing powered by TheMealDB with quick bookmarks
+            and shopping lists.
           </p>
         </div>
 
@@ -64,8 +68,7 @@ export default function Footer() {
               <span
                 key={name}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-base-200 text-sm text-base-content/70"
-                title={name}
-              >
+                title={name}>
                 {name[0]}
               </span>
             ))}

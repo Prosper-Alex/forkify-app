@@ -1,7 +1,13 @@
 import BookmarkToggleButton from "../bookmarks/BookmarkToggleButton.jsx";
 import { useBookmarks } from "../../contexts/BookmarksContext.jsx";
 
-export default function MealCard({ recipe, active, onSelect }) {
+export default function MealCard({
+  recipe,
+  active,
+  onSelect,
+  showDetailsButton = false,
+  detailsButtonLabel = "View details",
+}) {
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const bookmarked = isBookmarked(recipe.id);
 
@@ -35,15 +41,30 @@ export default function MealCard({ recipe, active, onSelect }) {
           <h3 className="text-lg font-semibold leading-tight text-base-content">{recipe.title}</h3>
           <p className="text-sm text-base-content/70 line-clamp-2">{recipe.description}</p>
         </header>
-        <div className="mt-auto flex flex-wrap gap-2 text-xs">
-          {recipe.tags.map((tag) => (
-            <span
-              key={tag}
-              className="badge badge-outline border-base-200 bg-base-200/60 text-base-content/80"
+        <div className="mt-auto flex items-end justify-between gap-3">
+          <div className="flex flex-wrap gap-2 text-xs">
+            {recipe.tags.map((tag) => (
+              <span
+                key={tag}
+                className="badge badge-outline border-base-200 bg-base-200/60 text-base-content/80"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {showDetailsButton && (
+            <button
+              type="button"
+              className="btn btn-xs rounded-full border-0 bg-amber-500 text-white hover:bg-amber-600 lg:hidden"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect?.();
+              }}
             >
-              {tag}
-            </span>
-          ))}
+              {detailsButtonLabel}
+            </button>
+          )}
         </div>
       </div>
     </article>

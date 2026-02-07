@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useApi from "../hooks/useApi.jsx";
+import useMediaQuery from "../hooks/useMediaQuery.jsx";
 import SearchBar from "../components/search-history/SearchBar.jsx";
 import RecentChips from "../components/search-history/RecentChips.jsx";
 import MealCard from "../components/recipes/MealCard.jsx";
@@ -20,6 +22,8 @@ const ingredientsSample = [
 ];
 
 export default function IndexPage() {
+  const navigate = useNavigate();
+  const desktopLayout = useMediaQuery("(min-width: 1024px)");
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState("all");
   const [selectedId, setSelectedId] = useState("");
@@ -146,7 +150,11 @@ export default function IndexPage() {
                 key={recipe.id}
                 recipe={recipe}
                 active={selectedRecipe && recipe.id === selectedRecipe.id}
-                onSelect={() => setSelectedId(recipe.id)}
+                showDetailsButton={!desktopLayout}
+                onSelect={() => {
+                  if (desktopLayout) setSelectedId(recipe.id);
+                  else navigate(`/meal/${recipe.id}`);
+                }}
               />
             ))}
 
@@ -160,7 +168,7 @@ export default function IndexPage() {
           )}
         </div>
 
-        <aside className="min-h-0 flex flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:self-start">
+        <aside className="hidden min-h-0 flex-col gap-4 rounded-2xl border border-base-200 bg-base-100 p-6 shadow-lg lg:sticky lg:top-24 lg:flex lg:h-[calc(100vh-7rem)] lg:self-start">
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 pr-2">
             <MealDetailPanel
               recipe={selectedRecipe}
