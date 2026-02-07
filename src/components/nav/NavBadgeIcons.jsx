@@ -34,7 +34,7 @@ function BadgeIcon({ label, count, iconPath }) {
       >
         <path d={iconPath} strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span className="badge indicator-item badge-primary badge-sm absolute -right-1 -top-1">
+      <span className="badge indicator-item badge-sm absolute -right-1 -top-1 border-0 bg-amber-500 text-white">
         {display}
       </span>
     </button>
