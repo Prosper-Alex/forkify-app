@@ -1,5 +1,6 @@
-import SectionHeader from "../components/layout/SectionHeader.jsx";
+import PageTitle from "../components/layout/PageTitle.jsx";
 import CategoryCard from "../components/categories/CategoryCard.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 
 const sampleCategories = [
   "Beef",
@@ -17,9 +18,11 @@ const sampleCategories = [
 ];
 
 export default function CategoriesPage() {
+  useDocumentTitle("Categories");
+
   return (
     <section className="flex flex-col gap-6 pb-12">
-      <SectionHeader
+      <PageTitle
         title="Categories"
         subtitle="Browse by type"
         action={<button className="btn btn-sm btn-primary">Random category</button>}

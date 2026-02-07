@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import BookmarkCard from "../components/bookmarks/BookmarkCard.jsx";
+import PageTitle from "../components/layout/PageTitle.jsx";
 import { useBookmarks } from "../contexts/BookmarksContext.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 
 const sortOptions = ["Name", "Category", "Area", "Recently added"];
 
@@ -9,6 +11,7 @@ export default function BookmarksPage() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [sort, setSort] = useState("Recently added");
+  useDocumentTitle("Bookmarks");
 
   const tabs = useMemo(() => {
     const cats = Array.from(new Set(bookmarks.map((b) => b.category).filter(Boolean)));
@@ -39,12 +42,11 @@ export default function BookmarksPage() {
 
   return (
     <section className="flex w-full flex-col gap-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-base-content/60">Bookmarks</p>
-          <h1 className="text-3xl font-bold">Saved meals</h1>
-        </div>
-        <div className="flex items-center gap-3">
+      <PageTitle
+        title="Saved meals"
+        eyebrow="Bookmarks"
+        action={
+          <div className="flex items-center gap-3">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -60,8 +62,9 @@ export default function BookmarksPage() {
               <option key={opt}>{opt}</option>
             ))}
           </select>
-        </div>
-      </header>
+          </div>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {tabs.map((tab) => (

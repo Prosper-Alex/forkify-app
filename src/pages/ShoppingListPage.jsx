@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
+import PageTitle from "../components/layout/PageTitle.jsx";
 import { useShoppingList } from "../contexts/ShoppingListContext.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 
 export default function ShoppingListPage() {
   const { toBuy, checked, addItems, toggleChecked, removeItem, clearChecked, clearAll } =
     useShoppingList();
   const [draft, setDraft] = useState({ name: "", quantity: "" });
   const [notice, setNotice] = useState(null);
+  useDocumentTitle("Shopping List");
 
   useEffect(() => {
     if (!notice) return undefined;
@@ -45,12 +48,11 @@ export default function ShoppingListPage() {
 
   return (
     <section className="flex w-full flex-col gap-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-base-content/60">Shopping List</p>
-          <h1 className="text-3xl font-bold">Groceries</h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <PageTitle
+        title="Groceries"
+        eyebrow="Shopping List"
+        action={
+          <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-sm btn-outline" onClick={clearChecked}>
             Clear checked
           </button>
@@ -60,8 +62,9 @@ export default function ShoppingListPage() {
           <button type="button" className="btn btn-sm btn-primary" onClick={handleCopy}>
             Copy list
           </button>
-        </div>
-      </header>
+          </div>
+        }
+      />
 
       {notice && (
         <div

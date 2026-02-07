@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useApi from "../hooks/useApi.jsx";
 import MealDetailPanel from "../components/recipes/MealDetailPanel.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 import { fetchMealById } from "../utils/mealdb.js";
 
 export default function MealDetailPage() {
@@ -10,6 +11,7 @@ export default function MealDetailPage() {
 
   const mealQuery = useApi((signal) => fetchMealById(id, signal), [id]);
   const recipe = useMemo(() => mealQuery.data ?? null, [mealQuery.data]);
+  useDocumentTitle(recipe?.title || "Recipe details");
 
   const handleBack = () => {
     if (window.history.length > 1) navigate(-1);

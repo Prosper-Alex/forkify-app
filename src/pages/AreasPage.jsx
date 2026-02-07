@@ -1,5 +1,6 @@
-import SectionHeader from "../components/layout/SectionHeader.jsx";
+import PageTitle from "../components/layout/PageTitle.jsx";
 import ChipsRow from "../components/home/ChipsRow.jsx";
+import useDocumentTitle from "../hooks/useDocumentTitle.jsx";
 
 const areasSample = [
   "American",
@@ -21,9 +22,11 @@ const areasSample = [
 ];
 
 export default function AreasPage() {
+  useDocumentTitle("Cuisines");
+
   return (
     <section className="flex flex-col gap-6 pb-12">
-      <SectionHeader
+      <PageTitle
         title="Cuisines"
         subtitle="Explore by area"
         action={<button className="btn btn-sm btn-primary">Surprise me</button>}
